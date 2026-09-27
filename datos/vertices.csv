@@ -1,0 +1,28 @@
+id,nombre,descripcion,ciudad
+V01,Central,Estacion Central - lineas Roja y Naranja - centro de La Paz,La Paz
+V02,Cementerio,Estacion Cementerio - linea Roja - ladera de acceso a El Alto,La Paz
+V03,16 de Julio,Estacion 16 de Julio - lineas Roja Azul y Plateada - feria de El Alto,El Alto
+V04,Mirador,Estacion Mirador - lineas Amarilla y Plateada - Ciudad Satelite,El Alto
+V05,Buenos Aires,Estacion Buenos Aires - linea Amarilla,La Paz
+V06,Sopocachi,Estacion Sopocachi - linea Amarilla,La Paz
+V07,Libertador,Estacion Libertador - lineas Amarilla Verde y Celeste - Curva de Holguin,La Paz
+V08,Alto Obrajes,Estacion Alto Obrajes - linea Verde,La Paz
+V09,Obrajes,Estacion Obrajes - linea Verde - Zona Sur,La Paz
+V10,Irpavi,Estacion Irpavi - linea Verde - Zona Sur,La Paz
+V11,Rio Seco,Estacion Rio Seco - linea Azul - extremo norte de El Alto,El Alto
+V12,UPEA,Estacion UPEA - linea Azul - junto a la Universidad Publica de El Alto,El Alto
+V13,Plaza La Paz,Estacion Plaza La Paz - linea Azul,El Alto
+V14,Plaza Libertad,Estacion Plaza Libertad - linea Azul,El Alto
+V15,Armentia,Estacion Armentia - linea Naranja,La Paz
+V16,Periferica,Estacion Periferica - linea Naranja,La Paz
+V17,Plaza Villarroel,Estacion Plaza Villarroel - lineas Naranja y Blanca,La Paz
+V18,Monumento Busch,Estacion Monumento Busch - lineas Blanca y Cafe,La Paz
+V19,Plaza Triangular,Estacion Plaza Triangular - linea Blanca,La Paz
+V20,Av Poeta,Estacion Avenida Poeta - lineas Blanca y Celeste,La Paz
+V21,Prado,Estacion Prado - linea Celeste - centro de La Paz,La Paz
+V22,Teatro al Aire Libre,Estacion Teatro al Aire Libre - linea Celeste,La Paz
+V23,6 de Marzo,Estacion 6 de Marzo (Jach'a Thaki) - linea Morada - Terminal de El Alto,El Alto
+V24,Faro Murillo,Estacion Faro Murillo (Tiquira) - lineas Morada y Plateada,La Paz
+V25,San Jose,Estacion San Jose - linea Morada,La Paz
+V26,Villa Copacabana,Estacion Villa Copacabana - linea Cafe,La Paz
+V27,San Antonio,Estacion San Antonio - linea Cafe,La Paz
