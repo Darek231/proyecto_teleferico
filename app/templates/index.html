@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Red del teleferico </title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.9/standalone/umd/vis-network.min.js"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="hero-wrap" id="heroWrap">
+  <div class="hero-sticky">
+    <div class="hero-fondo" id="heroFondo"></div>
+ 
+    <div class="hero-texto">
+      <h1>La Paz sobre las nubes</h1>
+      <p>Explora las rutas del teleférico y calcula el camino más rápido entre estaciones.</p>
+    </div>
+ 
+    <div class="hero-frente" id="heroFrente">
+      <img src="{{ url_for('static', filename='img/pngwing.com.png') }}" alt="">
+    </div>
+  </div>
+</div>
+
+<header>
+  <h1>Red del teleférico</h1>
+  <p>Sistema de análisis de rutas basado en teoría de grafos: la red se modela como un
+  grafo no dirigido y ponderado, donde cada estación es un vértice y cada tramo entre
+  cabinas es una arista con el tiempo de viaje en minutos.</p>
+</header>
+
+<div class="layout">
+
+  <!-- visualizacion y la tabs de los algoritmos -->
+  <div>
+    <div class="panel">
+      <h2>Mapa de la red</h2>
+      <div id="red-grafo"></div>
+      <div class="leyenda" id="leyenda-lineas"></div>
+    </div>
+
+    <div class="panel">
+      <div class="tabs">
+        <button data-tab="dijkstra" class="activo">Ruta más rápida</button>
+        <button data-tab="dfs">DFS</button>
+        <button data-tab="bfs">BFS</button>
+        <button data-tab="mst">Kruskal / Prim</button>
+        <button data-tab="datos">Matriz / listas</button>
+        <button data-tab="reporte">Reporte</button>
+        <button data-tab="admin">Editar red</button>
+      </div>
+
+      <!-- DIJKSTRA -->
+      <div class="tab-panel" data-panel="dijkstra">
+        <div class="fila-doble">
+          <div>
+            <label for="sel-origen">Origen</label>
+            <select id="sel-origen"></select>
+          </div>
+          <div>
+            <label for="sel-destino">Destino</label>
+            <select id="sel-destino"></select>
+          </div>
+        </div>
+        <button id="btn-dijkstra">Calcular ruta más rápida</button>
+        <div id="res-dijkstra"></div>
+      </div>
+
+      <!-- DFS -->
+      <div class="tab-panel oculto" data-panel="dfs">
+        <label for="sel-dfs-inicio">Nodo inicial</label>
+        <select id="sel-dfs-inicio"></select>
+        <button id="btn-dfs">Ejecutar DFS</button>
+        <div id="res-dfs"></div>
+      </div>
+
+      <!-- BFS -->
+      <div class="tab-panel oculto" data-panel="bfs">
+        <label for="sel-bfs-inicio">Nodo inicial</label>
+        <select id="sel-bfs-inicio"></select>
+        <button id="btn-bfs">Ejecutar BFS</button>
+        <div id="res-bfs"></div>
+      </div>
+
+      <!-- MST -->
+      <div class="tab-panel oculto" data-panel="mst">
+        <label for="sel-prim-inicio">Nodo inicial para Prim</label>
+        <select id="sel-prim-inicio"></select>
+        <button id="btn-mst">Calcular Kruskal y Prim</button>
+        <div id="res-mst"></div>
+      </div>
+
+      <!-- datos -->
+      <div class="tab-panel oculto" data-panel="datos">
+        <button id="btn-matriz" class="secundario">Ver matriz de adyacencia</button>
+        <button id="btn-lista" class="secundario">Ver lista de adyacencia</button>
+        <div id="res-datos"></div>
+      </div>
+
+
+      <!-- REPORTE -->
+      <div class="tab-panel oculto" data-panel="reporte">
+        <p class="subtexto">Genera un reporte con la ruta más rápida (según el origen y destino elegidos en la pestaña "Ruta más rápida") y los árboles de expansión mínima.</p>
+        <button id="btn-reporte">Generar reporte</button>
+        <div id="res-reporte"></div>
+      </div>
+
+      <!-- seccion de admin -->
+      <div class="tab-panel oculto" data-panel="admin">
+        <h3 style="font-size:1rem;margin-top:0;">Agregar vértice</h3>
+        <div class="fila-doble">
+          <input id="nv-id" placeholder="id (ej: V28)">
+          <input id="nv-nombre" placeholder="nombre">
+        </div>
+        <input id="nv-desc" placeholder="descripción" style="margin-top:.5rem;">
+        <button id="btn-add-vertice">Agregar vértice</button>
+
+        <h3 style="font-size:1rem;">Agregar arista</h3>
+        <div class="fila-doble">
+          <select id="ar-origen"></select>
+          <select id="ar-destino"></select>
+        </div>
+        <div class="fila-doble" style="margin-top:.5rem;">
+          <input id="ar-peso" placeholder="peso (minutos)">
+          <input id="ar-linea" placeholder="línea (opcional)">
+        </div>
+        <button id="btn-add-arista">Agregar arista</button>
+
+        <h3 style="font-size:1rem;">Eliminar arista</h3>
+        <div class="fila-doble">
+          <select id="del-origen"></select>
+          <select id="del-destino"></select>
+        </div>
+        <button id="btn-del-arista">Eliminar arista</button>
+
+        <button id="btn-reiniciar" class="secundario">Reiniciar red a los datos originales</button>
+        <div id="res-admin"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- info de estaciones -->
+  <div>
+    <div class="panel">
+      <h2>Estaciones</h2>
+      <p class="subtexto">27 estaciones, 9 líneas. Selecciona un origen y destino en el panel
+      izquierdo para resaltar la ruta sobre el mapa.</p>
+      <div id="lista-estaciones" style="max-height:420px; overflow:auto; margin-top:.6rem;"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

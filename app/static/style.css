@@ -1,0 +1,305 @@
+/* ======================================================================
+   PALETA — turquesa / verde oscuro / azul, con acento dorado
+   (igual que la referencia: fondo oscuro + acento calido para labels)
+   ====================================================================== */
+:root{
+  --fondo: #081815;
+  --fondo-2: #0c2420;
+  --panel: rgba(20, 45, 41, 0.55);       /* usado con backdrop-blur -> "vidrio" */
+  --panel-alto: rgba(28, 61, 55, 0.65);
+  --borde: rgba(255, 255, 255, 0.09);
+  --texto: #eaf3ef;
+  --texto-tenue: #9fc2b8;
+  --acento: #f0eeeb;      /* dorado, como el "A HIKING GUIDE" de la referencia */
+  --acento-oscuro: #b9822f;
+  --acento2: #044d1a;     /* celeste, para brillos/segundo acento */
+  --error: #e2665a;
+  --ok: #6fbf8b;
+
+  --l-roja: #d6303c;
+  --l-amarilla: #f2c94c;
+  --l-verde: #2e9e5b;
+  --l-azul: #3d7bf0;
+  --l-naranja: #f2994a;
+  --l-blanca: #f2f2f2;
+  --l-celeste: #56ccf2;
+  --l-morada: #9b51e0;
+  --l-cafe: #8b5e3c;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+
+body{
+margin:0;
+background:#081b18;
+color:var(--texto);
+font-family:'IBM Plex Sans', sans-serif;
+line-height:1.5;
+overflow-x:hidden;
+}
+
+
+body::before,
+body::after{
+display:none;
+}
+
+/* ---- "luces blancas" flotantes de fondo, puramente decorativas ---- */
+body::before, body::after{
+  content:"";
+  position:fixed;
+  border-radius:50%;
+  filter:blur(90px);
+  pointer-events:none;
+  z-index:0;
+}
+body::before{
+  width:38vw; height:38vw;
+  top:-8vw; right:-10vw;
+  background:rgba(255,255,255,.10);
+}
+body::after{
+  width:30vw; height:30vw;
+  bottom:5vw; left:-8vw;
+  background:rgba(86,204,242,.14);
+}
+
+h1,h2,h3{
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  margin:0 0 .4em 0;
+  letter-spacing:.2px;
+}
+
+/* ======================================================================
+   HERO — imagen de fondo + imagen de frente (parallax al hacer scroll)
+   ====================================================================== */
+.hero-wrap{position:relative;height:220vh;z-index:1;}
+.hero-sticky{position:sticky;top:0;height:100vh;overflow:hidden;background:var(--fondo);}
+
+.hero-fondo{
+  position:absolute;inset:0;z-index:1;
+  background:url("/static/img/fondo-teleferico.jpg") center/cover no-repeat;
+  will-change:transform;
+}
+.hero-fondo::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg, rgba(8, 24, 21, 0.365), rgba(8, 24, 21, 0.347));
+}
+
+.hero-eyebrow{
+  display:flex;align-items:center;gap:.7rem;
+  color:var(--acento);
+  letter-spacing:.32em;
+  font-size:.72rem;
+  font-weight:600;
+  text-transform:uppercase;
+  margin-bottom:1rem;
+}
+.hero-eyebrow::before{content:"";width:2.6rem;height:1px;background:var(--acento);}
+
+.hero-texto{
+  position:absolute;inset:0;z-index:2;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:0 clamp(1.5rem,8vw,9rem);
+}
+.hero-texto h1{
+  font-size:clamp(2.4rem,7vw,5rem);
+  line-height:1.05;
+  max-width:16ch;
+  background:linear-gradient(100deg, #f4fff9 0%, var(--acento) 45%, #f4fff9 70%);
+  background-size:280% auto;
+  background-clip:text;
+  -webkit-background-clip:text;
+  color:transparent;
+  animation:brillo-titulo 7s linear infinite;
+}
+@keyframes brillo-titulo{
+  to{background-position:-220% center;}
+}
+.hero-texto p{color:var(--texto-tenue);max-width:42ch;margin-top:1rem;font-size:1.05rem;}
+
+.hero-frente{
+  position:absolute;left:0;right:0;bottom:0;z-index:3;
+  will-change:transform;
+}
+.hero-frente img{display:block;width:100%;height:auto;}
+
+/* Bloque verde pegado al borde inferior de la imagen de frente: sube junto con ella y tapa el fondo de montañas */
+.hero-frente::after{content:"";position:absolute;left:0;right:0;top:calc(100% - 1px);height:110vh;background:var(--fondo);}
+
+.hero-scroll{
+  position:absolute;left:50%;bottom:1.2rem;transform:translateX(-50%);
+  z-index:4;color:var(--texto);font-size:.7rem;letter-spacing:.18em;
+  text-transform:uppercase;
+  display:flex;flex-direction:column;align-items:center;gap:.5rem;
+  opacity:.8;
+}
+.hero-scroll svg{animation:rebote 1.8s ease-in-out infinite;color:var(--acento);}
+@keyframes rebote{
+  0%,100%{transform:translateY(0);}
+  100%{transform:translateY(7px);}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .hero-fondo,.hero-frente{transform:none !important;}
+  .hero-texto h1{animation:none;}
+  .hero-scroll svg{animation:none;}
+}
+
+/* ======================================================================
+   CONTENIDO — paneles tipo "vidrio" sobre las luces de fondo
+   ====================================================================== */
+header{
+  position:relative;z-index:1;
+  padding:2.4rem 2rem 1.2rem;
+  border-bottom:1px solid var(--borde);
+}
+header h1{font-size:2rem;font-optical-sizing:auto;}
+header p{color:var(--texto-tenue);max-width:60ch;margin:0;}
+
+.layout{
+  position:relative;z-index:1;
+  display:grid;
+  grid-template-columns: minmax(0,1.5fr) minmax(320px, 1fr);
+  gap:1.5rem;
+  padding:1.5rem 2rem 3rem;
+}
+@media (max-width: 980px){
+  .layout{grid-template-columns:1fr;}
+}
+
+CSS
+.panel{
+background:#102923;
+border:1px solid #21443b;
+border-radius:10px;
+padding:1.4rem;
+box-shadow:none;
+
+transition:
+  transform .25s ease,
+  border-color .25s ease;
+}
+
+.panel:hover{
+transform:translateY(-3px);
+border-color:var(--acento);
+}
+.panel:hover{border-color:rgba(255,255,255,.18);}
+.panel + .panel{margin-top:1.2rem;}
+
+/* ---- animacion de aparicion al hacer scroll ---- */
+.reveal{
+opacity:0;
+transform:translateX(-16px);
+transition:
+opacity .55s ease,
+transform .55s ease;
+}
+
+.reveal.visible{
+opacity:1;
+transform:translateX(0);
+}
+
+#red-grafo{
+  height:520px;
+  background:var(--panel-alto);
+  border-radius:10px;
+}
+.leyenda{
+  display:flex;flex-wrap:wrap;gap:.5rem 1rem;
+  margin-top:.9rem;font-size:.82rem;color:var(--texto-tenue);
+}
+.leyenda span.pt{
+  display:inline-block;width:.7rem;height:.7rem;border-radius:50%;
+  margin-right:.35rem;vertical-align:middle;
+}
+
+label{
+  display:block;font-size:.82rem;color:var(--texto-tenue);
+  margin:.9rem 0 .3rem;
+}
+select, button, input{
+  font-family:inherit;font-size:.92rem;border-radius:8px;
+  border:1px solid var(--borde);
+  background:var(--panel-alto);
+  color:var(--texto);
+  padding:.55rem .65rem;
+  width:100%;
+}
+select:focus, input:focus{outline:none;border-color:var(--acento2);}
+
+/* ---- botones interactivos ---- */
+button{
+  background:var(--acento);
+  color:#c5c1b9;
+  border:none;
+  font-weight:600;
+  cursor:pointer;
+  margin-top:1rem;
+  transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+button:hover{
+  background:var(--acento-oscuro);
+  transform:translateY(-2px);
+  box-shadow:0 10px 24px rgba(255, 255, 254, 0.139);
+}
+button:active{transform:translateY(0);}
+button.secundario{
+  background:transparent;
+  border:1px solid var(--borde);
+  color:var(--texto);
+  font-weight:500;
+}
+button.secundario:hover{
+  border-color:var(--acento2);
+  box-shadow:0 8px 20px rgba(0, 0, 0, 0.721);
+  background:rgba(86,204,242,.06);
+}
+
+.fila-doble{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;}
+
+.resultado{
+  margin-top:1rem;padding:.9rem 1rem;border-radius:10px;
+  background:var(--panel-alto);
+  border:1px solid var(--borde);
+  font-size:.9rem;white-space:pre-wrap;
+  font-family:'IBM Plex Mono', monospace;
+}
+.resultado.error{border-color:var(--error);color:var(--error);}
+.costo-grande{
+  font-family:'Fraunces', serif;
+  font-size:2.1rem;
+  background:linear-gradient(100deg, var(--acento2), var(--acento));
+  background-clip:text;-webkit-background-clip:text;color:transparent;
+  margin:.2rem 0;
+}
+
+.tabs{display:flex;gap:.4rem;margin-bottom:.8rem;flex-wrap:wrap;}
+.tabs button{
+  width:auto;margin:0;padding:.45rem .85rem;font-size:.82rem;
+  background:transparent;border:1px solid var(--borde);
+  color:var(--texto-tenue);font-weight:500;
+}
+.tabs button:hover{transform:none;box-shadow:none;border-color:var(--acento2);color:var(--texto);}
+.tabs button.activo{
+  background:var(--acento);color:#0b0803;border-color:var(--acento);font-weight:600;
+}
+
+.oculto{display:none;}
+table{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:.6rem;}
+th,td{text-align:left;padding:.35rem .5rem;border-bottom:1px solid var(--borde);}
+th{color:var(--texto-tenue);font-weight:500;}
+.subtexto{color:var(--texto-tenue);font-size:.82rem;margin-top:.2rem;}
+
+footer{
+  position:relative;z-index:1;
+  padding:1.2rem 2rem 2rem;
+  color:var(--texto-tenue);
+  font-size:.8rem;
+  border-top:1px solid var(--borde);
+}
