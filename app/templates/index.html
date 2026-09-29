@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Red del teleferico </title>
+<title>Red del Teleférico — La Paz / El Alto</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.9/standalone/umd/vis-network.min.js"></script>
@@ -13,36 +13,50 @@
   <div class="hero-wrap" id="heroWrap">
   <div class="hero-sticky">
     <div class="hero-fondo" id="heroFondo"></div>
- 
-    <div class="hero-texto">
+
+    <div class="hero-texto reveal">
+      <div class="hero-eyebrow">Sistema de rutas</div>
       <h1>La Paz sobre las nubes</h1>
       <p>Explora las rutas del teleférico y calcula el camino más rápido entre estaciones.</p>
     </div>
- 
+
     <div class="hero-frente" id="heroFrente">
-      <img src="{{ url_for('static', filename='img/pngwing.com.png') }}" alt="">
+      <img src="{{ url_for('static', filename='img/frente-teleferico.png') }}" alt="">
+    </div>
+
+    <div class="hero-scroll">
+      <span>desliza para explorar</span>
+      <svg width="14" height="20" viewBox="0 0 14 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M7 1v17M1 12l6 6 6-6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
     </div>
   </div>
 </div>
 
-<header>
-  <h1>Red del teleférico</h1>
+<header class="reveal">
+  <div class="usuario-barra">
+    <span>Conectado como <strong>{{ usuario }}</strong> ({{ 'administrador' if es_admin else 'usuario' }})</span>
+    <a href="{{ url_for('logout') }}" class="usuario-salir">Cerrar sesión</a>
+  </div>
+  <h1>Red del Teleférico — La Paz &amp; El Alto</h1>
   <p>Sistema de análisis de rutas basado en teoría de grafos: la red se modela como un
   grafo no dirigido y ponderado, donde cada estación es un vértice y cada tramo entre
   cabinas es una arista con el tiempo de viaje en minutos.</p>
+  <p class="subtexto">Haz clic en dos estaciones del mapa para armar la ruta automáticamente,
+  o usa los selectores de la pestaña "Ruta más rápida" si prefieres escribir los nombres.</p>
 </header>
 
 <div class="layout">
 
-  <!-- visualizacion y la tabs de los algoritmos -->
+  <!-- visualizacion y las tabs de los algoritmos -->
   <div>
-    <div class="panel">
+    <div class="panel reveal">
       <h2>Mapa de la red</h2>
       <div id="red-grafo"></div>
       <div class="leyenda" id="leyenda-lineas"></div>
     </div>
 
-    <div class="panel">
+    <div class="panel reveal">
       <div class="tabs">
         <button data-tab="dijkstra" class="activo">Ruta más rápida</button>
         <button data-tab="dfs">DFS</button>
@@ -50,7 +64,9 @@
         <button data-tab="mst">Kruskal / Prim</button>
         <button data-tab="datos">Matriz / listas</button>
         <button data-tab="reporte">Reporte</button>
+        {% if es_admin %}
         <button data-tab="admin">Editar red</button>
+        {% endif %}
       </div>
 
       <!-- DIJKSTRA -->
@@ -100,7 +116,6 @@
         <div id="res-datos"></div>
       </div>
 
-
       <!-- REPORTE -->
       <div class="tab-panel oculto" data-panel="reporte">
         <p class="subtexto">Genera un reporte de texto con la ruta calculada (si hay origen/destino
@@ -146,7 +161,23 @@
 
   <!-- info de estaciones -->
   <div>
-    <div class="panel">
+    <div class="panel reveal" id="panel-foto-estacion">
+      <h2>Estación seleccionada</h2>
+      <p class="subtexto" id="foto-estacion-instrucciones">Haz clic en una estación del mapa para verla aquí.</p>
+      <div id="foto-estacion-contenido" class="oculto">
+        <div class="foto-estacion-marco">
+          <img id="foto-estacion-img" alt="">
+          <div id="foto-estacion-vacio" class="foto-estacion-vacio oculto">
+            🚡<br>Aún no hay foto para esta estación<br>
+            <span class="subtexto">(guarda una en static/img/estaciones/&lt;ID&gt;.jpg)</span>
+          </div>
+        </div>
+        <h3 id="foto-estacion-nombre" style="margin-top:.8rem;font-size:1.1rem;"></h3>
+        <p id="foto-estacion-desc" class="subtexto"></p>
+      </div>
+    </div>
+
+    <div class="panel reveal">
       <h2>Estaciones</h2>
       <p class="subtexto">27 estaciones, 9 líneas. Selecciona un origen y destino en el panel
       izquierdo para resaltar la ruta sobre el mapa.</p>

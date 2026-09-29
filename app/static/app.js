@@ -18,17 +18,21 @@ async function cargarGrafo(){
   const r = await fetch('/api/grafo');
   const d = await r.json();
   grafoActual = d.grafo;
-  // Primero lo que no depende de la libreria del mapa, para que los selects siempre se llenen
-  llenarSelects(grafoActual);
-  dibujarLeyenda(grafoActual);
-  dibujarListaEstaciones(grafoActual);
-  try{
-    dibujarRed(grafoActual);
-  }catch(e){
-    console.error('No se pudo dibujar el mapa:', e);
-    document.getElementById('red-grafo').innerHTML =
-      '<p style="padding:1rem">No se pudo cargar el mapa (libreria vis-network). Revisa tu conexion a internet y recarga con Ctrl+F5.</p>';
-  }
+
+  // Cada paso es independiente: si uno falla (ej. el mapa, que depende de
+  // una libreria externa), los demas igual se ejecutan y no se pierde
+  // el resto de la pagina (selects, leyenda, lista de estaciones).
+  try { dibujarRed(grafoActual); }
+  catch (e) { console.error('No se pudo dibujar el mapa:', e); }
+
+  try { llenarSelects(grafoActual); }
+  catch (e) { console.error('No se pudieron llenar los selects:', e); }
+
+  try { dibujarLeyenda(grafoActual); }
+  catch (e) { console.error('No se pudo dibujar la leyenda:', e); }
+
+  try { dibujarListaEstaciones(grafoActual); }
+  catch (e) { console.error('No se pudo dibujar la lista de estaciones:', e); }
 }
 
 function dibujarLeyenda(g){
@@ -81,6 +85,66 @@ function dibujarRed(g, resaltarAristas=null, resaltarNodos=null){
     interaction: { hover: true }
   };
   network = new vis.Network(contenedor, datos, opciones);
+
+  // clic en una estacion del mapa -> arma la ruta automaticamente
+  // (alternativa a elegir origen/destino con los selectores de abajo)
+  network.on('click', function(params){
+    if (params.nodes.length === 0) return; // clic en un espacio vacio, se ignora
+    manejarClicEstacion(params.nodes[0]);
+  });
+}
+
+let seleccionRuta = []; // ids de estaciones clickeadas en el mapa (maximo 2)
+
+function manejarClicEstacion(idNodo){
+  mostrarFotoEstacion(idNodo);
+
+  seleccionRuta.push(idNodo);
+  if (seleccionRuta.length > 2) seleccionRuta = [idNodo]; // un 3er clic reinicia la seleccion
+
+  // resaltar en el mapa cuales van seleccionadas, sin recrear toda la red
+  if (nodesDataSet){
+    nodesDataSet.update(grafoActual.vertices.map(v => ({id: v.id, color: '#c9d3ea'})));
+    seleccionRuta.forEach((id, i) => {
+      nodesDataSet.update({id, color: i === 0 ? '#56ccf2' : '#e3a857'});
+    });
+  }
+
+  if (seleccionRuta.length === 1){
+    document.getElementById('sel-origen').value = idNodo;
+    cambiarTab('dijkstra');
+    mostrarResultado('res-dijkstra', 'Origen: ' + idNodo + '. Ahora haz clic en la estación de destino en el mapa.');
+  } else if (seleccionRuta.length === 2){
+    document.getElementById('sel-destino').value = idNodo;
+    cambiarTab('dijkstra');
+    document.getElementById('btn-dijkstra').click();
+  }
+}
+
+function cambiarTab(nombreTab){
+  const boton = document.querySelector(`.tabs button[data-tab="${nombreTab}"]`);
+  if (boton) boton.click();
+}
+
+function mostrarFotoEstacion(idNodo){
+  const v = grafoActual.vertices.find(x => x.id === idNodo);
+  if (!v) return;
+
+  document.getElementById('foto-estacion-instrucciones').style.display = 'none';
+  document.getElementById('foto-estacion-contenido').classList.remove('oculto');
+  document.getElementById('foto-estacion-nombre').textContent = `${v.id} — ${v.nombre}`;
+  document.getElementById('foto-estacion-desc').textContent = v.descripcion || '';
+
+  const img = document.getElementById('foto-estacion-img');
+  const vacio = document.getElementById('foto-estacion-vacio');
+  img.classList.remove('oculto');
+  vacio.classList.add('oculto');
+  img.onerror = function(){
+    this.onerror = null;
+    this.classList.add('oculto');
+    vacio.classList.remove('oculto');
+  };
+  img.src = `/static/img/estaciones/${v.id}.jpg`;
 }
 
 function llenarSelects(g){
@@ -278,15 +342,18 @@ document.getElementById('btn-reiniciar').addEventListener('click', async () => {
 
 cargarGrafo();
 
-
+// ---- Efecto parallax del hero (envuelto en try/catch: si falla,
+// no debe afectar al resto de la pagina) ----
+try {
   (function(){
     const wrap = document.getElementById('heroWrap');
     const fondo = document.getElementById('heroFondo');
     const frente = document.getElementById('heroFrente');
+    if (!wrap || !fondo || !frente) return; // si falta algo, no rompe nada mas
 
     function actualizar(){
       const total = wrap.offsetHeight - window.innerHeight;
-      let p = -wrap.getBoundingClientRect().top / total;
+      let p = total > 0 ? -wrap.getBoundingClientRect().top / total : 0;
       p = Math.min(Math.max(p, 0), 1);
 
       fondo.style.transform  = `translateY(${p * 8}vh) scale(${1 + p * 0.08})`; // se mueve poco
@@ -296,3 +363,31 @@ cargarGrafo();
     window.addEventListener('resize', actualizar);
     actualizar();
   })();
+} catch (e) { console.error('Efecto de hero no disponible:', e); }
+
+// ---- Animacion de aparicion al hacer scroll (paneles con clase "reveal") ----
+// Solo se activa (clase "js-anim" en <html>) si el navegador soporta
+// IntersectionObserver; si no, el CSS ya deja todo visible por defecto.
+try {
+  if ('IntersectionObserver' in window) {
+    document.documentElement.classList.add('js-anim');
+
+    const elementos = document.querySelectorAll('.reveal');
+    const observador = new IntersectionObserver((entradas) => {
+      entradas.forEach((entrada) => {
+        if (entrada.isIntersecting) {
+          entrada.target.classList.add('visible');
+          observador.unobserve(entrada.target); // solo aparece una vez
+        }
+      });
+    }, { threshold: 0.15 });
+
+    elementos.forEach((el) => observador.observe(el));
+
+    // Red de seguridad: si por algun motivo el observador no revela
+    // algo (ej. un elemento fuera de flujo), a los 2.5s se revela igual.
+    setTimeout(() => {
+      elementos.forEach((el) => el.classList.add('visible'));
+    }, 2500);
+  }
+} catch (e) { console.error('Animacion de aparicion no disponible:', e); }

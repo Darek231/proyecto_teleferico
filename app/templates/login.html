@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iniciar sesión — Red del Teleférico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<style>
+  .login-wrap{
+    min-height:100vh;
+    display:flex;align-items:center;justify-content:center;
+    padding:2rem;
+    position:relative;z-index:1;
+  }
+  .login-card{
+    width:100%;max-width:380px;
+    background:var(--panel);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border:1px solid var(--borde);
+    border-radius:16px;
+    padding:2.2rem 2rem;
+    box-shadow:0 20px 60px rgba(0,0,0,.35);
+  }
+  .login-eyebrow{
+    display:flex;align-items:center;gap:.6rem;
+    color:var(--acento);letter-spacing:.28em;font-size:.68rem;
+    font-weight:600;text-transform:uppercase;margin-bottom:.6rem;
+  }
+  .login-eyebrow::before{content:"";width:2rem;height:1px;background:var(--acento);}
+  .login-card h1{font-size:1.7rem;margin-bottom:.3rem;}
+  .login-card p.subtitulo{color:var(--texto-tenue);font-size:.88rem;margin:0 0 1.4rem;}
+  .login-error{
+    background:rgba(226,102,90,.12);
+    border:1px solid var(--error);
+    color:var(--error);
+    border-radius:8px;
+    padding:.6rem .8rem;
+    font-size:.85rem;
+    margin-bottom:1rem;
+  }
+  .login-ayuda{
+    margin-top:1.4rem;padding-top:1.2rem;
+    border-top:1px solid var(--borde);
+    font-size:.78rem;color:var(--texto-tenue);
+    line-height:1.6;
+  }
+  .login-ayuda code{color:var(--texto);}
+</style>
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="login-eyebrow">Sistema de rutas</div>
+    <h1>Iniciar sesión</h1>
+    <p class="subtitulo">Red del Teleférico — La Paz &amp; El Alto</p>
+
+    {% if error %}
+      <div class="login-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('login') }}">
+      <label for="usuario">Usuario</label>
+      <input type="text" id="usuario" name="usuario" autocomplete="username" required autofocus>
+
+      <label for="contrasena">Contraseña</label>
+      <input type="password" id="contrasena" name="contrasena" autocomplete="current-password" required>
+
+      <button type="submit">Ingresar</button>
+    </form>
+
+    <div class="login-ayuda">
+      Cuentas de ejemplo para probar (cámbialas en <code>datos/usuarios.json</code>):<br>
+      Admin: <code>admin</code> / <code>admin123</code> — puede editar la red.<br>
+      Invitado: <code>invitado</code> / <code>invitado123</code> — solo consulta rutas.
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+from functools import wraps
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import algoritmo
+import auth
+import reportes
 import validaciones
-import reportes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
 from grafo import Grafo
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -16,6 +18,9 @@ RUTA_VERTICES = os.path.join(BASE_DIR, "datos", "vertices.csv")
 RUTA_ARISTAS = os.path.join(BASE_DIR, "datos", "aristas.csv")
 
 app = Flask(__name__)
+# Clave para firmar la cookie de sesion. Para un proyecto real esto NO
+# deberia estar escrito en el codigo; aqui alcanza para la practica.
+app.secret_key = "cambia-esta-clave-antes-de-usar-en-produccion-teleferico-2026"
 
 grafo = Grafo(dirigido=False)
 
@@ -30,33 +35,96 @@ cargar_grafo_inicial()
 def error_json(mensaje, codigo=400):
     return jsonify({"ok": False, "error": mensaje}), codigo
 
+
+# ----------------------------------------------------------------------
+# Autenticacion: decoradores + rutas de login/logout
+# ----------------------------------------------------------------------
+def login_requerido(f):
+    """Exige que haya una sesion iniciada (cualquier rol). Si la peticion
+    es a /api/..., responde 401 en JSON; si es una pagina, redirige a
+    /login."""
+    @wraps(f)
+    def envoltura(*args, **kwargs):
+        if "usuario" not in session:
+            if request.path.startswith("/api/"):
+                return error_json("Debes iniciar sesion para hacer esto", 401)
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return envoltura
+
+
+def admin_requerido(f):
+    """Exige ademas que el rol sea 'admin'. Se usa DESPUES de
+    login_requerido (login_requerido va mas afuera, mas cerca de @app.route)."""
+    @wraps(f)
+    def envoltura(*args, **kwargs):
+        if session.get("rol") != "admin":
+            return error_json("Esta accion requiere una cuenta de administrador", 403)
+        return f(*args, **kwargs)
+    return envoltura
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    error = None
+    if request.method == "POST":
+        usuario = (request.form.get("usuario") or "").strip()
+        contrasena = request.form.get("contrasena") or ""
+        rol = auth.verificar_login(usuario, contrasena)
+        if rol:
+            session["usuario"] = usuario
+            session["rol"] = rol
+            return redirect(url_for("index"))
+        error = "Usuario o contraseña incorrectos"
+    return render_template("login.html", error=error)
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
+
 @app.route("/")
+@login_requerido
 def index():
-    return render_template("index.html")
+    return render_template(
+        "index.html",
+        usuario=session.get("usuario"),
+        rol=session.get("rol"),
+        es_admin=(session.get("rol") == "admin"),
+    )
 
 @app.route("/api/grafo")
+@login_requerido
 def api_grafo():
     return jsonify({"ok": True, "grafo": grafo.to_dict()})
 
 
 @app.route("/api/matriz")
+@login_requerido
 def api_matriz():
     ids, m = grafo.matriz_adyacencia()
     return jsonify({"ok": True, "ids": ids, "matriz": m})
 
 
 @app.route("/api/lista_adyacencia")
+@login_requerido
 def api_lista_adyacencia():
     return jsonify({"ok": True, "lista": grafo.lista_adyacencia()})
 
 
 @app.route("/api/reiniciar", methods=["POST"])
+@login_requerido
+@admin_requerido
 def api_reiniciar():
     cargar_grafo_inicial()
     return jsonify({"ok": True, "grafo": grafo.to_dict()})
 
-#CRUD 
+#CRUD (requieren cuenta de administrador)
 @app.route("/api/vertices", methods=["POST"])
+@login_requerido
+@admin_requerido
 def api_agregar_vertice():
     datos = request.get_json(force=True)
     try:
@@ -70,6 +138,8 @@ def api_agregar_vertice():
     return jsonify({"ok": True, "grafo": grafo.to_dict()})
 
 @app.route("/api/vertices/<id_v>", methods=["PUT"])
+@login_requerido
+@admin_requerido
 def api_modificar_vertice(id_v):
     datos = request.get_json(force=True)
     try:
@@ -84,6 +154,8 @@ def api_modificar_vertice(id_v):
     return jsonify({"ok": True, "grafo": grafo.to_dict()})
 
 @app.route("/api/vertices/<id_v>", methods=["DELETE"])
+@login_requerido
+@admin_requerido
 def api_eliminar_vertice(id_v):
     try:
         grafo.eliminar_vertice(id_v)
@@ -92,6 +164,8 @@ def api_eliminar_vertice(id_v):
     return jsonify({"ok": True, "grafo": grafo.to_dict()})
 
 @app.route("/api/aristas", methods=["POST"])
+@login_requerido
+@admin_requerido
 def api_agregar_arista():
     datos = request.get_json(force=True)
     try:
@@ -111,6 +185,8 @@ def api_agregar_arista():
 
 
 @app.route("/api/aristas", methods=["DELETE"])
+@login_requerido
+@admin_requerido
 def api_eliminar_arista():
     datos = request.get_json(force=True)
     try:
@@ -121,6 +197,8 @@ def api_eliminar_arista():
 
 
 @app.route("/api/aristas/peso", methods=["PUT"])
+@login_requerido
+@admin_requerido
 def api_modificar_peso():
     datos = request.get_json(force=True)
     try:
@@ -131,6 +209,7 @@ def api_modificar_peso():
     return jsonify({"ok": True, "grafo": grafo.to_dict()})
 
 @app.route("/api/dfs")
+@login_requerido
 def api_dfs():
     inicio = request.args.get("inicio")
     try:
@@ -141,6 +220,7 @@ def api_dfs():
     return jsonify({"ok": True, "resultado": resultado})
 
 @app.route("/api/bfs")
+@login_requerido
 def api_bfs():
     inicio = request.args.get("inicio")
     try:
@@ -151,6 +231,7 @@ def api_bfs():
     return jsonify({"ok": True, "resultado": resultado})
 
 @app.route("/api/dijkstra")
+@login_requerido
 def api_dijkstra():
     origen = request.args.get("origen")
     destino = request.args.get("destino")
@@ -164,6 +245,7 @@ def api_dijkstra():
     return jsonify({"ok": True, "resultado": resultado})
 
 @app.route("/api/kruskal")
+@login_requerido
 def api_kruskal():
     try:
         validaciones.validar_grafo_para_arbol_expansion(grafo)
@@ -173,6 +255,7 @@ def api_kruskal():
     return jsonify({"ok": True, "resultado": resultado})
 
 @app.route("/api/prim")
+@login_requerido
 def api_prim():
     inicio = request.args.get("inicio")
     try:
@@ -184,6 +267,7 @@ def api_prim():
     return jsonify({"ok": True, "resultado": resultado})
 
 @app.route("/api/reporte")
+@login_requerido
 def api_reporte():
     origen = request.args.get("origen")
     destino = request.args.get("destino")
@@ -216,4 +300,4 @@ def api_reporte():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5011)
+    app.run(debug=True, port=5013)

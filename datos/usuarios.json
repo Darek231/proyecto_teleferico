@@ -1,0 +1,12 @@
+[
+  {
+    "usuario": "admin",
+    "hash": "scrypt:32768:8:1$7tblZoqoihkNsKQi$306f62f822979664ab96076b6958789698af3d1c985000f152e42756784639c673c8a71777ba52e763b287b2e4e7e6272265c488c200d6c7a7a9df22bb72f16b",
+    "rol": "admin"
+  },
+  {
+    "usuario": "invitado",
+    "hash": "scrypt:32768:8:1$88FLQ7Z3gVBxwDCZ$6fd3ad5ac0b3451e475dd1caaa7b8c87bbb99cbf663b31cd66819a6fb89c873be056a2bb141ceb588842bde787fe9330d7ae82b6c9061778963e1dcf42337680",
+    "rol": "usuario"
+  }
+]
