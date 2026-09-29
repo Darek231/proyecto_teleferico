@@ -125,6 +125,9 @@ h1,h2,h3{
 }
 .hero-frente img{display:block;width:100%;height:auto;}
 
+/* Bloque verde pegado al borde inferior de la imagen de frente: sube junto con ella y tapa el fondo de montañas */
+.hero-frente::after{content:"";position:absolute;left:0;right:0;top:calc(100% - 1px);height:110vh;background:var(--fondo);}
+
 .hero-scroll{
   position:absolute;left:50%;bottom:2.2rem;transform:translateX(-50%);
   z-index:4;color:var(--texto);font-size:.7rem;letter-spacing:.18em;
