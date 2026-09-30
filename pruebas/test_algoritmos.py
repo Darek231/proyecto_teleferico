@@ -6,6 +6,7 @@ import unittest
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "app"))
 
 import algoritmo
+import tarifas
 from grafo import Grafo
 
 BASE_DIR = os.path.join(os.path.dirname(__file__), "..")
@@ -87,6 +88,48 @@ class TestArbolExpansionMinima(unittest.TestCase):
         g = construir_grafo()
         k = algoritmo.kruskal(g)
         self.assertEqual(len(k["aceptadas"]), g.num_vertices() - 1)
+
+
+class TestTarifas(unittest.TestCase):
+    def _grafo_simple(self):
+        """Grafo chico A-B-C con dos lineas distintas, para probar el
+        calculo de tarifa sin depender de los datos reales del CSV."""
+        g = Grafo(dirigido=False)
+        g.agregar_vertice("A", "Estacion A")
+        g.agregar_vertice("B", "Estacion B")
+        g.agregar_vertice("C", "Estacion C")
+        g.agregar_arista("A", "B", 5, linea="Roja")
+        g.agregar_arista("B", "C", 5, linea="Azul")
+        return g
+
+    def test_una_sola_linea_no_cobra_transbordo(self):
+        g = construir_grafo()
+        # V01 -> V02 -> V03 es toda la linea Roja (sin transbordo)
+        r = tarifas.calcular_tarifa(g, ["V01", "V02", "V03"], "normal")
+        self.assertEqual(r["num_transbordos"], 0)
+        self.assertEqual(r["tarifa"], 3.0)
+
+    def test_dos_lineas_cobra_un_transbordo(self):
+        g = self._grafo_simple()
+        r = tarifas.calcular_tarifa(g, ["A", "B", "C"], "normal")
+        self.assertEqual(r["num_lineas"], 2)
+        self.assertEqual(r["num_transbordos"], 1)
+        self.assertEqual(r["tarifa"], 5.0)  # 3 + 2*1
+
+    def test_tarifa_preferencial(self):
+        g = self._grafo_simple()
+        r = tarifas.calcular_tarifa(g, ["A", "B", "C"], "preferencial")
+        self.assertEqual(r["tarifa"], 2.5)  # 1.5 + 1*1
+
+    def test_tipo_pasajero_invalido(self):
+        g = self._grafo_simple()
+        with self.assertRaises(ValueError):
+            tarifas.calcular_tarifa(g, ["A", "B", "C"], "vip")
+
+    def test_camino_vacio_tarifa_cero(self):
+        g = self._grafo_simple()
+        r = tarifas.calcular_tarifa(g, ["A"], "normal")
+        self.assertEqual(r["tarifa"], 0.0)
 
 
 if __name__ == "__main__":

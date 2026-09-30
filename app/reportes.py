@@ -29,8 +29,18 @@ def reporte_ruta_dijkstra(grafo, resultado):
     for i, nodo in enumerate(camino, start=1):
         nombre = grafo.vertices[nodo]["nombre"]
         partes.append(f"  {i}. {nodo} - {nombre}")
-    return "\n".join(partes)
 
+    info_tarifas = resultado.get("tarifas")
+    if info_tarifas:
+        partes.append("")
+        partes.append("Tarifa:")
+        for tipo, t in info_tarifas.items():
+            lineas_txt = " -> ".join(t["lineas_usadas"])
+            partes.append(
+                f"  {tipo.capitalize()}: Bs {t['tarifa']:.2f} "
+                f"({t['num_lineas']} linea(s): {lineas_txt}, {t['num_transbordos']} transbordo(s))"
+            )
+    return "\n".join(partes)
 
 def reporte_comparacion_mst(kruskal_res, prim_res):
     partes = [_linea("COMPARACION KRUSKAL VS PRIM")]

@@ -272,6 +272,18 @@ button.secundario:hover{
   margin:.2rem 0;
 }
 
+.tarifa-caja{
+  margin-top:1rem;
+  padding-top:.8rem;
+  border-top:1px dashed var(--borde);
+  font-family:'IBM Plex Sans', sans-serif;
+}
+.tarifa-fila{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:.25rem 0;font-size:.92rem;
+}
+.tarifa-fila strong{color:var(--acento);font-family:'Fraunces', serif;font-size:1.05rem;}
+
 .tabs{display:flex;gap:.4rem;margin-bottom:.8rem;flex-wrap:wrap;}
 .tabs button{
   width:auto;margin:0;padding:.45rem .85rem;font-size:.82rem;

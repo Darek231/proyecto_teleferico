@@ -10,6 +10,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import algoritmo
 import auth
 import reportes
+import tarifas
 import validaciones
 from grafo import Grafo
 
@@ -240,6 +241,8 @@ def api_dijkstra():
         validaciones.validar_vertice_existe(grafo, destino)
         validaciones.validar_grafo_para_dijkstra(grafo)
         resultado = algoritmo.dijkstra(grafo, origen, destino)
+        if resultado.get("camino"):
+            resultado["tarifas"] = tarifas.calcular_todas_las_tarifas(grafo, resultado["camino"])
     except (ValueError, algoritmo.PesoNegativoError) as e:
         return error_json(str(e))
     return jsonify({"ok": True, "resultado": resultado})
@@ -280,6 +283,9 @@ def api_reporte():
             validaciones.validar_grafo_para_dijkstra(grafo)
             resultados["dijkstra"] = algoritmo.dijkstra(grafo, origen, destino)
             if resultados["dijkstra"]["camino"]:
+                resultados["dijkstra"]["tarifas"] = tarifas.calcular_todas_las_tarifas(
+                    grafo, resultados["dijkstra"]["camino"]
+                )
                 recomendaciones.append(
                     "Usar la ruta calculada minimiza el tiempo de viaje entre "
                     "las estaciones seleccionadas."
@@ -297,6 +303,7 @@ def api_reporte():
 
     texto = reportes.generar_reporte_completo(grafo, resultados, recomendaciones)
     return jsonify({"ok": True, "reporte": texto})
+
 
 
 if __name__ == "__main__":

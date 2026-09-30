@@ -190,12 +190,27 @@ document.getElementById('btn-dijkstra').addEventListener('click', async () => {
   }
   const nombres = res.camino.map(id => grafoActual.vertices.find(v=>v.id===id).nombre);
   el.className = 'resultado';
-  el.innerHTML = `<div class="costo-grande">${res.costo.toFixed(1)} min</div>` +
-    `Ruta: ${res.camino.map((id,i)=>`${id} (${nombres[i]})`).join(' → ')}`;
 
-  const paresRuta = [];
-  for(let i=0;i<res.camino.length-1;i++) paresRuta.push([res.camino[i], res.camino[i+1]]);
-  dibujarRed(grafoActual, paresRuta, res.camino);
+  let tarifaHtml = '';
+  if (res.tarifas) {
+    const n = res.tarifas.normal, p = res.tarifas.preferencial;
+    tarifaHtml = `
+      <div class="tarifa-caja">
+        <div class="tarifa-fila"><span>Normal</span><strong>Bs ${n.tarifa.toFixed(2)}</strong></div>
+        <div class="tarifa-fila"><span>Preferencial (estudiante / adulto mayor)</span><strong>Bs ${p.tarifa.toFixed(2)}</strong></div>
+        <div class="subtexto">${n.num_transbordos} transbordo(s) · líneas: ${n.lineas_usadas.join(' → ')}</div>
+      </div>`;
+  }
+
+  el.innerHTML = `<div class="costo-grande">${res.costo.toFixed(1)} min</div>` +
+    `Ruta: ${res.camino.map((id,i)=>`${id} (${nombres[i]})`).join(' → ')}` +
+    tarifaHtml;
+
+  try {
+    const paresRuta = [];
+    for(let i=0;i<res.camino.length-1;i++) paresRuta.push([res.camino[i], res.camino[i+1]]);
+    dibujarRed(grafoActual, paresRuta, res.camino);
+  } catch (e) { console.error('No se pudo redibujar el mapa:', e); }
 });
 
 // ---- DFS ----
